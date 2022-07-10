@@ -1,4 +1,5 @@
 import re
+import bs4
 import utils
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -15,7 +16,8 @@ def get_html(url: str):
     return driver.page_source
 
     
-def get_match_info(matches, n_outcomes: int) -> pd.DataFrame:
+def get_match_info(matches: bs4.element.ResultSet,
+                   n_outcomes: int) -> pd.DataFrame:
     '''
     Over all possible matches from the scraped html, get the information and
     output as a pandas dataframe. 
@@ -25,7 +27,7 @@ def get_match_info(matches, n_outcomes: int) -> pd.DataFrame:
     have the right amount of information (e.g. side/players (2), time of play (1)
     and odds (n)) then we move onto the next
     '''
-    
+
     data = []
     for match in matches:
         

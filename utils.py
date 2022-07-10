@@ -38,7 +38,7 @@ def is_arb_bet(odds: np.array) -> bool:
         return False
     
 
-def get_bet_outcomes(odds):
+def get_bet_outcomes(odds: np.array) -> list:
     '''
     If an arbitrage bet exists, then we can find the ratio of what to place on
     each outcome, as well as the expected return

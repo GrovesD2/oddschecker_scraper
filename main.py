@@ -6,10 +6,16 @@ GAMES = {
     'basketball': 2,
     'ufc-mma': 2,
     'baseball': 2,
+    'american-football': 2,
+    'chess': 2,
+    'e-sports': 2,
+    'volleyball': 2,
     
     'football': 3,
     'rugby-union': 3,
+    'rugby-league': 3,
     'boxing': 3,
+    'gaelic-games': 3,
 }
 
 if __name__ == '__main__':
