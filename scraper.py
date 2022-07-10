@@ -98,6 +98,8 @@ def main(games: dict) -> pd.DataFrame:
     dfs = []
     for game, n_outcomes in games.items():
         
+        print('Scraping', game)
+        
         # Read in the html and parse with beautiful soup
         html = get_html(BASE_URL + game)
         soup = BeautifulSoup(html, 'html.parser')
@@ -107,15 +109,16 @@ def main(games: dict) -> pd.DataFrame:
             soup.findAll('tr', {'class': 'match-on'}),
             n_outcomes
         )
+        if df is not None:
         
-        # Perform cleaning steps to the dataframe
-        df = utils.clean_odds_df(df, n_outcomes)
-        
-        # Find arb bets and get the betting ratios (if they exist)
-        df = classify_bets(df, n_outcomes)
-        
-        # Add the game identifier and add to the list of dfs
-        df['game'] = game
-        dfs.append(df)
+            # Perform cleaning steps to the dataframe
+            df = utils.clean_odds_df(df, n_outcomes)
+            
+            # Find arb bets and get the betting ratios (if they exist)
+            df = classify_bets(df, n_outcomes)
+            
+            # Add the game identifier and add to the list of dfs
+            df['game'] = game
+            dfs.append(df)
         
     return pd.concat(dfs, axis = 0, ignore_index = True)

@@ -6,7 +6,6 @@ GAMES = {
     'basketball': 2,
     'ufc-mma': 2,
     'baseball': 2,
-    'american-football': 2,
     'chess': 2,
     'e-sports': 2,
     'volleyball': 2,
@@ -20,3 +19,4 @@ GAMES = {
 
 if __name__ == '__main__':
     df = scraper.main(GAMES)
+    df.to_csv('current_opportunities.csv', index = False)
