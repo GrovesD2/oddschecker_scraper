@@ -15,10 +15,11 @@ def clean_odds_df(df: pd.DataFrame,
     odds to floats
     '''
 
-    df = df[df['time'] != 'In Play']
+    df = df[df['time'] != 'In Play'].reset_index(drop = True)
     
     for col in odds_cols(num_outcomes):
-        df[col] = pd.eval(df[col])
+        df.loc[:, f'fractional_{col}'] = df[col]
+        df.loc[:, col] = pd.eval(df[col])
     
     return df.reset_index(drop = True)
 
@@ -55,3 +56,17 @@ def get_bet_outcomes(odds: np.array) -> list:
     rhs[-1] = 1
     
     return np.linalg.solve(lhs, rhs).tolist()
+
+
+def format_cols(df: pd.DataFrame) -> pd.DataFrame:
+    '''
+    Change the column order to the desired formatting
+    '''
+    
+    cols = ['game', 'n_outcomes', 'time']
+    cols += sorted([col for col in df.columns if 'name' in col])
+    cols += sorted([col for col in df.columns if 'bet_' in col])
+    cols += ['return']
+    cols += sorted([col for col in df.columns if 'odds' in col])
+    
+    return df[cols]

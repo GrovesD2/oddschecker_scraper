@@ -7,6 +7,7 @@ from selenium import webdriver
 
 BASE_URL = 'https://www.oddschecker.com/'
 
+
 def get_html(url: str):
     '''
     Get the HTML from the url, using Chromedriver to load the page
@@ -24,8 +25,8 @@ def get_match_info(matches: bs4.element.ResultSet,
 
     Note: sometimes the data does not scrape correctly, i.e. we could be 
     missing one of the odds because of it refreshing. Therefore, if we don't
-    have the right amount of information (e.g. side/players (2), time of play (1)
-    and odds (n)) then we move onto the next
+    have the right amount of information (e.g. side/players (2), time of play
+    (1) and odds (n)) then we move onto the next
     '''
 
     data = []
@@ -59,30 +60,21 @@ def get_match_info(matches: bs4.element.ResultSet,
 
         
 def classify_bets(df: pd.DataFrame,
-                  n_outcomes: int):
+                  n_outcomes: int) -> pd.DataFrame:
     
-    # Find if arb bets exist, and filter out the non-arbs
-    df['is_arb_bet'] = (
+    # Determine the outcome of each bet
+    bet_outcomes = (
         df[utils.odds_cols(n_outcomes)]
-        .apply(utils.is_arb_bet, axis = 1)
+        .apply(utils.get_bet_outcomes, axis = 1)
     )
-    df = df[df['is_arb_bet']].reset_index(drop = True)
+    bet_outcomes = pd.DataFrame(
+        data = bet_outcomes.tolist(),
+        columns = ['bet_' + str(n) for n in range(0, n_outcomes)] + ['return'],
+    )
+   
+    df = pd.concat([df, bet_outcomes], axis = 1)
     
-    # Only find the bet-outcomes if arb bets exist
-    if len(df) > 0:
-        # Determine the outcome of each bet
-        bet_outcomes = (
-            df[utils.odds_cols(n_outcomes)]
-            .apply(utils.get_bet_outcomes, axis = 1)
-        )
-        bet_outcomes = pd.DataFrame(
-            data = bet_outcomes.tolist(),
-            columns = ['bet_' + str(n) for n in range(0, n_outcomes)] + ['return'],
-        )
-       
-        df = pd.concat([df, bet_outcomes], axis = 1)
-    
-    return df
+    return df[df['return'] > 0]
     
     
 def main(games: dict) -> pd.DataFrame:
@@ -107,18 +99,33 @@ def main(games: dict) -> pd.DataFrame:
         # Turn the matches into a pandas datafame
         df = get_match_info(
             soup.findAll('tr', {'class': 'match-on'}),
-            n_outcomes
+            n_outcomes,
         )
+        
         if df is not None:
-        
-            # Perform cleaning steps to the dataframe
-            df = utils.clean_odds_df(df, n_outcomes)
+                
+            try:
             
-            # Find arb bets and get the betting ratios (if they exist)
-            df = classify_bets(df, n_outcomes)
-            
-            # Add the game identifier and add to the list of dfs
-            df['game'] = game
-            dfs.append(df)
+                # Perform cleaning steps to the dataframe
+                df = utils.clean_odds_df(df, n_outcomes)
+                
+                # Find arb bets and get the betting ratios (if they exist)
+                df = classify_bets(df, n_outcomes)
+                
+                if len(df) > 0:
+                
+                    # Add the game identifier and add to the list of dfs
+                    df.loc[:, 'game'] = game
+                    df.loc[:, 'n_outcomes'] = n_outcomes
+                    dfs.append(df)
+                
+            except Exception as e:
+                
+                print(f'{game} failed:', e)
         
-    return pd.concat(dfs, axis = 0, ignore_index = True)
+    if len(dfs) > 0:
+        return utils.format_cols(
+            pd.concat(dfs, axis = 0, ignore_index = True)
+        )
+    else:
+        return None

@@ -1,6 +1,6 @@
 import scraper
 
-# Mapping of the type of game to consider, to the number of outcomes
+# Mapping of the type of game to consider to the number of outcomes
 GAMES = {
     'tennis': 2,
     'basketball': 2,
@@ -17,6 +17,19 @@ GAMES = {
     'gaelic-games': 3,
 }
 
-if __name__ == '__main__':
+def main():
+    '''
+    Main running function (also called in the dash)
+    '''
+    
     df = scraper.main(GAMES)
-    df.to_csv('current_opportunities.csv', index = False)
+    
+    if df is not None:
+        df.to_csv('current_opportunities.csv', index = False)
+    else:
+        print('No arbitrage bets detected')
+    
+    return 
+
+if __name__ == '__main__':
+    main()
