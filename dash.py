@@ -62,7 +62,7 @@ idx = st.sidebar.number_input(
 
 
 # This is the filtered version of the dataframe to the game we are considering
-df_filt = df.iloc[[int(idx)]]
+df_filt = df.iloc[[int(idx)]].reset_index(drop = True)
 
 # Get the information from the filtered dataframe ----------------------------
 
